@@ -1,6 +1,3 @@
-use std::ops::Add;
-use std::sync::RwLock;
-use std::sync::Arc;
 use actix_web::HttpServer;
 use actix_web::HttpResponse;
 use actix_web::Responder;
@@ -28,38 +25,11 @@ async fn noop() -> impl Responder {
     HttpResponse::Ok()
 }
 
-async fn read_the_counter(data: web::Data<Arc<RwLock<u32>>>) -> impl Responder {
-    let mut result = String::new();
-    {
-        let handle = data.read().unwrap();
-        result.push_str(&format!("{}", *handle));
-    }
-    HttpResponse::Ok().content_type("text/plain").body(result)
-}
-
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     let opt = Opt::from_args();
-    let guarded_counter: Arc<RwLock<u32>> = Arc::new(RwLock::new(0));
-    {
-        let guarded_counter_for_background_thread = guarded_counter.clone();
-        tokio::spawn(async move {
-            loop {
-                {
-                    let mut handle = guarded_counter_for_background_thread.write().unwrap();
-                    *handle += 1;
-                }
-                tokio::time::delay_until(
-                    tokio::time::Instant::now().add(tokio::time::Duration::from_millis(250)),
-                )
-                .await;
-            }
-        });
-    }
     let mut server = HttpServer::new(move || {
         App::new()
-            .data(guarded_counter.clone())
-            .route("/counter", web::get().to(read_the_counter))
             .route("/noop", web::get().to(noop))
     });
     for addr in opt.socket_addrs.iter() {
