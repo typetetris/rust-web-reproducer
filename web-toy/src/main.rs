@@ -40,6 +40,7 @@ async fn main() -> std::io::Result<()> {
         .client_shutdown(opt.client_shutdown.unwrap_or(std::u64::MAX))
         .max_connections(std::usize::MAX)
         .max_connection_rate(std::usize::MAX)
+        .keep_alive(actix_http::KeepAlive::Timeout(5))
         .run()
         .await
 }
