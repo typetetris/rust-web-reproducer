@@ -22,7 +22,7 @@ Now use
 
 for example, this runs fine on my machine. But
 
-    run.sh 200000
+    run.sh 300000
 
 runs for around 10 seconds, but I see channel closed, connection closed by peer
 and sometimes http status code 408, which to my understanding shouldn't be
